@@ -123,6 +123,16 @@ func (ali *aliCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
 }
 
+// GPULabel returns the label added to nodes with GPU resource.
+func (ali *aliCloudProvider) GPULabel() string {
+	return GPULabel
+}
+
+// GetAvailableGPUTypes return all available GPU types cloud provider supports
+func (ali *aliCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+	return availableGPUTypes
+}
+
 func (ali *aliCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	result := make([]cloudprovider.NodeGroup, 0, len(ali.asgs))
 	for _, asg := range ali.asgs {

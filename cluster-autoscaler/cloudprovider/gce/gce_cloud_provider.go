@@ -90,6 +90,16 @@ func (gce *GceCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
 }
 
+// GPULabel returns the label added to nodes with GPU resource.
+func (gce *GceCloudProvider) GPULabel() string {
+	return GPULabel
+}
+
+// GetAvailableGPUTypes return all available GPU types cloud provider supports
+func (gce *GceCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+	return availableGPUTypes
+}
+
 // NodeGroups returns all node groups configured for this cloud provider.
 func (gce *GceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	migs := gce.gceManager.GetMigs()
