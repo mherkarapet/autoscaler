@@ -33,8 +33,11 @@ import (
 )
 
 const (
+	// ProviderName is the cloud provider name for baiducloud
+	ProviderName = "baiducloud"
+
 	// GPULabel is the label added to nodes with GPU resource.
-	GPULabel = "baidu/nvidia_name"
+	GPULabel = "cloud.google.com/gke-accelerator"
 )
 
 var (
@@ -161,7 +164,7 @@ func (baiducloud *baiducloudCloudProvider) GPULabel() string {
 	return GPULabel
 }
 
-// GetAvailableGPUTypes returns all available GPU types cloud provider supports.
+// GetAvailableGPUTypes return all available GPU types cloud provider supports
 func (baiducloud *baiducloudCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
 }

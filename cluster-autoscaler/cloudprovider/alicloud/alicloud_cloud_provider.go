@@ -21,6 +21,8 @@ import (
 	"os"
 	"strings"
 
+	"os"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -31,16 +33,18 @@ import (
 )
 
 const (
+	// ProviderName  is the cloud provider name for alicloud
+	ProviderName = "alicloud"
+
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "aliyun.accelerator/nvidia_name"
 )
 
 var (
 	availableGPUTypes = map[string]struct{}{
-		"Tesla-P4": {},
-		"M40":      {},
-		"P100":     {},
-		"V100":     {},
+		"nvidia-tesla-k80":  {},
+		"nvidia-tesla-p100": {},
+		"nvidia-tesla-v100": {},
 	}
 )
 
@@ -97,6 +101,16 @@ func (ali *aliCloudProvider) addAsg(asg *Asg) {
 
 func (ali *aliCloudProvider) Name() string {
 	return cloudprovider.AlicloudProviderName
+}
+
+// GPULabel returns the label added to nodes with GPU resource.
+func (ali *aliCloudProvider) GPULabel() string {
+	return GPULabel
+}
+
+// GetAvailableGPUTypes return all available GPU types cloud provider supports
+func (ali *aliCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+	return availableGPUTypes
 }
 
 // GPULabel returns the label added to nodes with GPU resource.

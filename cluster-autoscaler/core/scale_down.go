@@ -793,7 +793,9 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	emptyNodes := sd.getEmptyNodes(candidates, pods, sd.context.MaxEmptyBulkDelete, scaleDownResourcesLeft, tempNodesPerNodeGroup)
 	if len(emptyNodes) > 0 {
 		nodeDeletionStart := time.Now()
-		deletedNodes, err := sd.scheduleDeleteEmptyNodes(emptyNodes, sd.context.ClientSet, sd.context.Recorder, readinessMap, candidateNodeGroups)
+		confirmation := make(chan errors.AutoscalerError, len(emptyNodes))
+		sd.scheduleDeleteEmptyNodes(emptyNodes, sd.context.CloudProvider, sd.context.ClientSet, sd.context.Recorder, readinessMap, candidateNodeGroups, confirmation)
+		err := sd.waitForEmptyNodesDeleted(emptyNodes, confirmation)
 		nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
 
 		// TODO: Give the processor some information about the nodes that failed to be deleted.
@@ -937,7 +939,7 @@ func (sd *ScaleDown) getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, 
 			availabilityMap[nodeGroup.Id()] = available
 		}
 		if available > 0 {
-			resourcesDelta, err := computeScaleDownResourcesDelta(sd.context.CloudProvider, node, nodeGroup, resourcesNames)
+			resourcesDelta, err := computeScaleDownResourcesDelta(cloudProvider, node, nodeGroup, resourcesNames)
 			if err != nil {
 				klog.Errorf("Error: %v", err)
 				continue
@@ -958,7 +960,7 @@ func (sd *ScaleDown) getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, 
 	return result[:limit]
 }
 
-func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, client kube_client.Interface,
+func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, cp cloudprovider.CloudProvider, client kube_client.Interface,
 	recorder kube_record.EventRecorder, readinessMap map[string]bool,
 	candidateNodeGroups map[string]cloudprovider.NodeGroup) ([]*apiv1.Node, errors.AutoscalerError) {
 	deletedNodes := []*apiv1.Node{}
@@ -1002,10 +1004,13 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, client k
 			}
 			deleteErr = deleteNodeFromCloudProvider(nodeToDelete, sd.context.CloudProvider,
 				sd.context.Recorder, sd.clusterStateRegistry)
-			if deleteErr != nil {
-				klog.Errorf("Problem with empty node deletion: %v", deleteErr)
-				result = status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: deleteErr}
-				return
+			if deleteErr == nil {
+				nodeGroup := candidateNodeGroups[nodeToDelete.Name]
+				if readinessMap[nodeToDelete.Name] {
+					metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(cp.GPULabel(), cp.GetAvailableGPUTypes(), nodeToDelete, nodeGroup), metrics.Empty)
+				} else {
+					metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(cp.GPULabel(), cp.GetAvailableGPUTypes(), nodeToDelete, nodeGroup), metrics.Unready)
+				}
 			}
 			if readinessMap[nodeToDelete.Name] {
 				metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(sd.context.CloudProvider.GPULabel(), sd.context.CloudProvider.GetAvailableGPUTypes(), nodeToDelete, nodeGroupForDeletedNode), metrics.Empty)

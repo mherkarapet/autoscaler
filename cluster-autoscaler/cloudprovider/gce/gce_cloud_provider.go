@@ -32,6 +32,9 @@ import (
 )
 
 const (
+	// ProviderNameGCE is the name of GCE cloud provider.
+	ProviderNameGCE = "gce"
+
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
 )
@@ -41,8 +44,6 @@ var (
 		"nvidia-tesla-k80":  {},
 		"nvidia-tesla-p100": {},
 		"nvidia-tesla-v100": {},
-		"nvidia-tesla-p4":   {},
-		"nvidia-tesla-t4":   {},
 	}
 )
 
@@ -67,6 +68,16 @@ func (gce *GceCloudProvider) Cleanup() error {
 // Name returns name of the cloud provider.
 func (gce *GceCloudProvider) Name() string {
 	return cloudprovider.GceProviderName
+}
+
+// GPULabel returns the label added to nodes with GPU resource.
+func (gce *GceCloudProvider) GPULabel() string {
+	return GPULabel
+}
+
+// GetAvailableGPUTypes return all available GPU types cloud provider supports
+func (gce *GceCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+	return availableGPUTypes
 }
 
 // GPULabel returns the label added to nodes with GPU resource.

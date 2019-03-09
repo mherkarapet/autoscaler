@@ -31,6 +31,8 @@ import (
 )
 
 const (
+	// ProviderName is the cloud provider name for Magnum
+	ProviderName = "magnum"
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
 )
@@ -71,6 +73,16 @@ func (mcp *magnumCloudProvider) GPULabel() string {
 
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
 func (mcp *magnumCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+	return availableGPUTypes
+}
+
+// GPULabel returns the label added to nodes with GPU resource.
+func (os *magnumCloudProvider) GPULabel() string {
+	return GPULabel
+}
+
+// GetAvailableGPUTypes return all available GPU types cloud provider supports
+func (os *magnumCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
 }
 

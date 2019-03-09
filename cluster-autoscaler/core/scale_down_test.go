@@ -1182,8 +1182,6 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	nodes := make([]*apiv1.Node, len(config.nodes))
 	nodesMap := make(map[string]*apiv1.Node)
 	groups := make(map[string][]*apiv1.Node)
-	tempNodesPerGroup := make(map[string]int)
-	var tempNodes []*apiv1.Node
 
 	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
 		deletedNodes <- node
