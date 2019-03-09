@@ -60,8 +60,16 @@ type CloudProvider interface {
 	// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
 	GetResourceLimiter() (*ResourceLimiter, error)
 
+<<<<<<< HEAD
 	// GetInstanceID gets the instance ID for the specified node.
 	GetInstanceID(node *apiv1.Node) string
+=======
+	// GPULabel returns the label added to nodes with GPU resource.
+	GPULabel() string
+
+	// GetAvailableGPUTypes return all available GPU types cloud provider supports.
+	GetAvailableGPUTypes() map[string]struct{}
+>>>>>>> 90666881d... Move GPULabel and GPUTypes to cloud provider
 
 	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
 	Cleanup() error

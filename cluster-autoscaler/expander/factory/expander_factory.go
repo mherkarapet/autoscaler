@@ -39,12 +39,11 @@ func ExpanderStrategyFromString(expanderFlag string, cloudProvider cloudprovider
 	case expander.LeastWasteExpanderName:
 		return waste.NewStrategy(), nil
 	case expander.PriceBasedExpanderName:
-		pricing, err := cloudProvider.Pricing()
-		if err != nil {
+		if _, err := cloudProvider.Pricing(); err != nil {
 			return nil, err
 		}
-		return price.NewStrategy(pricing,
-			price.NewSimplePreferredNodeProvider(nodeLister),
+		return price.NewStrategy(cloudProvider,
+			price.NewSimplePreferredNodeProvider(autoscalingKubeClients.AllNodeLister()),
 			price.SimpleNodeUnfitness), nil
 	}
 	return nil, errors.NewAutoscalerError(errors.InternalError, "Expander %s not supported", expanderFlag)
